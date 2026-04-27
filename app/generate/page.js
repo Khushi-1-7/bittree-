@@ -1,20 +1,25 @@
 "use client"
+
 import { useSearchParams } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-const Generate = () => {
-    const searchParams=useSearchParams()
+function GenerateContent() {
 
-    const [handle, sethandle] = useState(searchParams.get('handle'))
+    const searchParams = useSearchParams()
+
+    const [handle, sethandle] = useState(searchParams.get('handle') || "")
+
     const [links, setLinks] = useState([
         { link: "", linktext: "" }
     ])
+
     const [pic, setpic] = useState("")
 
     // Update link fields
     const handleChange = (index, key, value) => {
+
         setLinks((prevLinks) =>
             prevLinks.map((item, i) =>
                 i === index
@@ -26,6 +31,7 @@ const Generate = () => {
 
     // Add new empty link input
     const addLink = () => {
+
         setLinks([
             ...links,
             { link: "", linktext: "" }
@@ -36,7 +42,11 @@ const Generate = () => {
     const submitLinks = async () => {
 
         const myHeaders = new Headers()
-        myHeaders.append("Content-Type", "application/json")
+
+        myHeaders.append(
+            "Content-Type",
+            "application/json"
+        )
 
         const raw = JSON.stringify({
             links: links,
@@ -49,14 +59,13 @@ const Generate = () => {
         const requestOptions = {
             method: "POST",
             headers: myHeaders,
-            body: raw,
-            redirect: "follow"
+            body: raw
         }
 
         try {
 
             const r = await fetch(
-                "http://localhost:3000/api/add",
+                "/api/add",
                 requestOptions
             )
 
@@ -81,11 +90,13 @@ const Generate = () => {
         } catch (error) {
 
             toast.error("Something went wrong")
+
             console.log(error)
         }
     }
 
     return (
+
         <div className='bg-[#E9C0E9] min-h-screen grid grid-cols-2'>
 
             {/* LEFT SECTION */}
@@ -112,6 +123,7 @@ const Generate = () => {
                     <h2>Step 2: Add links</h2>
 
                     {links.map((item, index) => (
+
                         <div key={index} className='flex gap-2'>
 
                             <input
@@ -181,16 +193,29 @@ const Generate = () => {
 
             {/* RIGHT SECTION */}
             <div className='w-full h-screen'>
+
                 <img
                     className="h-full object-contain"
                     src="/generate.png"
                     alt="generate"
                 />
 
-                <ToastContainer />
             </div>
+
+            <ToastContainer />
+
         </div>
     )
 }
 
-export default Generate
+export default function Generate() {
+
+    return (
+
+        <Suspense fallback={<div>Loading...</div>}>
+
+            <GenerateContent />
+
+        </Suspense>
+    )
+}
